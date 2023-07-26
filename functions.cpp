@@ -1,17 +1,15 @@
 #include "functions.h"
 
+// All const char * instead of String because it saves Memory and strlen() works and string.length() not 
 const char * cheers[] = {"Cheers", "You da best!", "Love you <3", "Goooo!!", "Yummy", "Delicious!", "Prost", "Chin chin", "Salut", 
-"Prosit", "Cheerio", "Good choice!", "Tasty", "<3333"};
-const char *pCheer;                                   // Variable for the selected curse
-String sCheer;                                        // casting because lcd.print only accepts Strigs 
+"Prosit", "Cheerio", "Good choice!", "Tasty", "Lets gooo", "Sweet"};
+
 const char *curses[] = {"Pussy", "Noob", "Little baby", "Boring!!!", "Lame!!!", "Chicken", "Meh!", "Not cool", "Weakling", "Loser", 
 "Fuck off", "Go away!", "Easter egg ;)", "Stupid", "Lightweight", "Dick", "Cunt", "Cock", "Buhh!", "Unfortunate",
 "Wimp", "Softy", "Shame", "U sure?", "Doofian!", "Kurva", "Fils de pute", "Cyka blyat", "Bitsh whyy?", "Whack!!", "Dumb",
-"Foolish", "Dull", "Lel", "Sad :(", "Stupid", "Traitor"};
-const char *pCurse;                                   // Variable for the selected curse
-String sCurse;                                        // casting because lcd.print only accepts Strigs 
+"Foolish", "Dull", "Lel", "Sad :(", "Stupid"};
 
-String alcohol_types[] = {"Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka"};
+const char *alcohol_types[] = {"Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka", "Pflaume", "Tequila", "Wurstwasser"};
 
 void lcd_Start(LiquidCrystal_I2C lcd){             
   lcd.begin();                                   // LCD einschalten 
@@ -21,11 +19,11 @@ void lcd_Start(LiquidCrystal_I2C lcd){
 void start_Screen(LiquidCrystal_I2C lcd){ 
   currentTime = millis();
   lcd.setCursor(0,0);
-  lcd.print("Lets gooo!!!");
+  lcd.print("    Lets gooo!!!");
   lcd.setCursor(0,2);
-  lcd.print("Press Y to choose");
+  lcd.print(" Press Y to choose");
   lcd.setCursor(0,3);
-  lcd.print("an alcohol type");
+  lcd.print("  an alcohol type");
   while(1) {
     if (!digitalRead(BUTTON_NO)) {
       digitalWrite(LED_NO, HIGH);
@@ -40,13 +38,12 @@ void start_Screen(LiquidCrystal_I2C lcd){
       selected_alcohol = 0;                               // is initilized with -1 for no selection
       lcd.clear();
       lcd.setCursor(0,2);
-      lcd.print("Press N to change");
+      lcd.print(" Press N to change");
       lcd.setCursor(0,3);
-      lcd.print("Press Y to select");
+      lcd.print(" Press Y to select");
       digitalWrite(LED_YES, LOW);
       while(1) {
-        lcd.setCursor(0,0);
-        lcd.print(alcohol_types[selected_alcohol]);
+        print_centered_String_from_Array(lcd, alcohol_types, 0, selected_alcohol);
         if (!digitalRead(BUTTON_NO)) {
           digitalWrite(LED_NO, HIGH);
           while(!digitalRead(BUTTON_NO)) {delay(200);}       // to wait that the botton is unpressed
@@ -75,15 +72,15 @@ void calibrate_Routine(LiquidCrystal_I2C lcd){
   lcd.clear(); // f1                                        
   while (currentTime <= WARM_UP || sensorValue >= SENSOR_THRESHOLD_VALUE) {     // läuft bis warming Up Zeit um ist oder sensorValue unter SENSOR_THRESHOLD_VALUE
     if (currentTime - previousTime >= REFRESH_ALC_TIME) {
-      lcd.setCursor(0,0);
-      lcd.print("Sensor calibrating  ");                                       //two spaces are improtant to clear display
-      lcd.setCursor(0,1);
-      lcd.print("Current value:");
+      lcd.setCursor(1,0);
+      lcd.print("Sensor calibrating ");                                       //space is improtant to clear display
+      lcd.setCursor(1,1);
+      lcd.print("Current value: ");
       lcd.setCursor(15,1);
       lcd.print("    ");                                                         //spaces to clear display
-      lcd.setCursor(15,1);                        
+      lcd.setCursor(16,1);                        
       lcd.print(sensorValue);
-      lcd.setCursor(0,3);
+      lcd.setCursor(2,3);
       lcd.print("Warmup shot? Y/N");
       previousTime = currentTime;
     }
@@ -99,21 +96,16 @@ void calibrate_Routine(LiquidCrystal_I2C lcd){
 
 void ready_Message(LiquidCrystal_I2C lcd, int sensorValue){ 
   lcd.setCursor(0,0);
-  lcd.print("Shotty is ready");
   if(selected_alcohol != -1) {
-    lcd.print(" with");
+    lcd.print("Shotty is ready with");
     lcd.setCursor(0,1);
-    lcd.print(alcohol_types[selected_alcohol]);
+    print_centered_String_from_Array(lcd, alcohol_types, 1, selected_alcohol);
   }
-  //lcd.setCursor(0,1);
-  //lcd.print("Current value:");
-  //lcd.setCursor(15,1);
-  //lcd.print("    ");                                // wenn er von 100 auf 99 springt da nicht 990 steht weil die 0 stehen bleibt
-  //lcd.setCursor(15,1);
-  //lcd.print(sensorValue);
-  lcd.setCursor(0,2);
+  else
+    lcd.print("  Shotty is ready");
+  lcd.setCursor(2,2);
   lcd.print("Press Y for shot");
-  lcd.setCursor(0,3);
+  lcd.setCursor(1,3);
   lcd.print("Press N to measure");
 }
 
@@ -121,9 +113,9 @@ int starting_Measurement(LiquidCrystal_I2C lcd){
     lcd.clear();
     lcd.setCursor(0,0); 
     lcd.print("Starting measurement");
-    lcd.setCursor(0,2); 
+    lcd.setCursor(2,2); 
     lcd.print("Blow me for 5 s");
-    lcd.setCursor(0,3);
+    lcd.setCursor(5,3);
     sensorValueFixed = analogRead(MQ3pin);
     sensorValueReference = sensorValueFixed;
     for(int i = 5; i > 0; i--) {                         // es wird runtergezählt von 5 in der zeit in der man pusten soll
@@ -140,7 +132,7 @@ int starting_Measurement(LiquidCrystal_I2C lcd){
     }
     lcd.setCursor(0,3);
     lcd.print("                 "); 
-    lcd.setCursor(0,3);
+    lcd.setCursor(2,3);
     lcd.print("Harder Daddy!!!"); 
     sensorValueFixed = get_Highest_Value(sensorValueFixed);
     sensorValueFixed = get_Highest_Value(sensorValueFixed);
@@ -153,15 +145,18 @@ int starting_Measurement(LiquidCrystal_I2C lcd){
       return sensorValueFixed - sensorValueReference;
 }
 
-void lcd_Curse(LiquidCrystal_I2C lcd) {
-  int next_curse = random(sizeof(curses)/sizeof(curses[0]));
-  pCurse = curses[next_curse];
-  sCurse = pCurse;                                              // casting because lcd.print only accepts Strigs 
+
+void print_centered_String_from_Array(LiquidCrystal_I2C lcd, const char **message, byte print_row, int array_pos) { 
+  int len = strlen(message[array_pos]);                                  
+  int mid_of_screen = (10 - len / 2) - (len % 2);             // len % 2 to place it to the left if string has uneven number of char
+  lcd.setCursor(mid_of_screen, print_row); 
+  lcd.print((String) message[array_pos]);
+}
+
+void lcd_Curse(LiquidCrystal_I2C lcd) {                                             
   digitalWrite(LED_NO, HIGH);
   lcd.clear();
-  int mid_of_screen = 10 - strlen(curses[next_curse]) /2;
-  lcd.setCursor(mid_of_screen,1); 
-  lcd.print(sCurse);
+  print_centered_String_from_Array(lcd, curses, 1, random(sizeof(curses)/sizeof(curses[0])));
   delay(3000);
   digitalWrite(LED_NO, LOW);
   digitalWrite(LED_YES, LOW);
@@ -186,28 +181,34 @@ int get_Highest_Value( int sensorValueFixed){
 void display_Message(LiquidCrystal_I2C lcd, int sensorValue){
   lcd.clear();
   displayValue = (float) sensorValue / 500.0;
-  lcd.setCursor(0,1);
-  lcd.print ("Alcohol: ");
+  if(sensorValue < 25)                    // so that small changes dont show up and the result looks more exact :))
+    displayValue = 0;
+  lcd.setCursor(2,1);
+  lcd.print("Alcohol: ");
   lcd.print(displayValue);
   lcd.print(" %.");
   lcd.setCursor(0,0);
-  switch(sensorValue) {                   // is like that because switch dont work with float 250 == 0.5 dispalyValue                                           
-      case   0 ... 250:                   lcd.print("Meh, pretty sober!"); 
-                                          lcd.setCursor(0,2); lcd.print("You need a drink!");
-                                          lcd.setCursor(0,3); lcd.print("Press Y for shot!"); 
+  switch(sensorValue) {                   // is like that because switch dont work with float 250 == 0.5 dispalyValue   
+      case   0 ... 25:                    lcd.print(" No alcohol deteced"); 
+                                          lcd.setCursor(2,2); lcd.print("A shot can help!");
+                                          lcd.setCursor(1,3); lcd.print("Press Y for shot!"); 
+                                          break;                                        
+      case   26 ... 250:                   lcd.print(" Meh, pretty sober!"); 
+                                          lcd.setCursor(1,2); lcd.print("You need a drink!");
+                                          lcd.setCursor(1,3); lcd.print("Press Y for shot!"); 
                                           break;
-      case 251 ... 500:                   lcd.print("A little drunk");
-                                          lcd.setCursor(0,2); lcd.print("A shot is needed!");
-                                          lcd.setCursor(0,3); lcd.print("Press Y for shot!");
+      case 251 ... 500:                   lcd.print("   A little drunk");
+                                          lcd.setCursor(1,2); lcd.print("A shot is needed!");
+                                          lcd.setCursor(1,3); lcd.print("Press Y for shot!");
                                           break;
-      case 501 ... NO_SHOT_LIMIT:         lcd.print("Good level!!!");
-                                          lcd.setCursor(0,2); lcd.print("Keep it up!");
-                                          lcd.setCursor(0,3); lcd.print("Press Y for shot!"); 
+      case 501 ... NO_SHOT_LIMIT:         lcd.print("   Good level!!!");
+                                          lcd.setCursor(4,2); lcd.print("Keep it up!");
+                                          lcd.setCursor(1,3); lcd.print("Press Y for shot!"); 
                                           break;
-      case NO_SHOT_LIMIT+1 ... 1500:      lcd.print("You are wasted!!!");
-                                          lcd.setCursor(0,2); lcd.print("You had enough!");
+      case NO_SHOT_LIMIT+1 ... 1500:      lcd.print(" You are wasted!!!");
+                                          lcd.setCursor(2,2); lcd.print("You had enough!");
                                           lcd.setCursor(0,3); lcd.print("Press N for no shot");
-      default:                            lcd.print("Thats weird!"); 
+      default:                            lcd.print("    Thats weird!"); 
                                           lcd.setCursor(0,2); lcd.print("Something went wrong");
                                           break;
   }
@@ -229,7 +230,7 @@ void shot_Or_Not(LiquidCrystal_I2C lcd, int sensorValue){
      if (!digitalRead(BUTTON_YES)) {
         digitalWrite(LED_NO, HIGH);
         lcd.clear();
-        lcd.setCursor(0,0);
+        lcd.setCursor(5,0);
         lcd.print("Forget it"); 
         delay(3000);
         digitalWrite(LED_NO, LOW);
@@ -238,7 +239,7 @@ void shot_Or_Not(LiquidCrystal_I2C lcd, int sensorValue){
         }  else if(!digitalRead(BUTTON_NO)) {
         digitalWrite (LED_NO, HIGH);
         lcd.clear();
-        lcd.setCursor(0,0);
+        lcd.setCursor(5,0);
         lcd.print("Good boy!"); 
         delay(3000);
         digitalWrite(LED_NO, LOW);
@@ -253,21 +254,18 @@ void shot_In_Five(LiquidCrystal_I2C lcd){
   digitalWrite(LED_YES, HIGH); 
   digitalWrite(LED_NO, LOW);  
   lcd.clear();
-  lcd.setCursor(0,0); 
-  pCheer = cheers[random(sizeof(cheers)/sizeof(cheers[0]))];
-  sCheer = pCheer;                                              // casting because lcd.print only accepts Strigs 
-  lcd.print(sCheer);
-  lcd.setCursor(0,1); 
+  print_centered_String_from_Array(lcd, cheers, 0, random(sizeof(cheers)/sizeof(cheers[0])));
+  lcd.setCursor(5,1); 
   lcd.print("Shot in ");
   lcd.print (CANCEL_TIME / 1000);
   lcd.setCursor(0,2);
   lcd.print("Shot glass in place?");
-  lcd.setCursor(0,3);
+  lcd.setCursor(1,3);
   lcd.print("Press N to cancel"); 
     for(int i=CANCEL_TIME/1000; i>=0; i--) {      
-       lcd.setCursor(0,1);
+       lcd.setCursor(5,1);
        lcd.print("Shot in     "); 
-       lcd.setCursor(8,1);
+       lcd.setCursor(13,1);
        lcd.print(i);
        lcd.print(" s"); 
        int y = CANCEL_TIME/1000;
@@ -296,37 +294,40 @@ void pour_Shot(LiquidCrystal_I2C lcd) {
    previousTime = currentTime;
   while (currentTime - previousTime <= RELAIS_TIME) {
     if (!digitalRead(BUTTON_NO)) {                                            
-       for (int i = 0; i <= NO_AMOUNT; i++) {                                      // for loop is nececarry because active relayPin leads to wrong readings at the bottons
+       for (byte i = 0; i <= NO_AMOUNT; i++) {                                      // for loop is nececarry because active relayPin leads to wrong readings at the bottons
         if (digitalRead(BUTTON_NO) == 1) 
           break;
         if (i == NO_AMOUNT) {
           digitalWrite(RELAIS_PIN, LOW); // f1
           lcd_Curse(lcd);
+          digitalWrite(LED_YES, LOW);
           return;
         }
        } 
     }
     currentTime = millis();
-  } 
+  }
+  digitalWrite (LED_YES, LOW); 
   lcd.clear();
   digitalWrite(RELAIS_PIN, LOW);
   while (!digitalRead(BUTTON_NO) || !digitalRead(BUTTON_YES)) {}                    //versuchter fix2
   while (doubleShot == true) {
-    lcd.setCursor(0,0); 
-    lcd.print("Double Shot? ;)");
-    lcd.setCursor(0,3);
+    lcd.setCursor(4,0); 
+    lcd.print("Double Shot?");
+    lcd.setCursor(9,1); 
+    lcd.print(";)");
+    lcd.setCursor(8,3);
     lcd.print("Y/N");
     if (!digitalRead(BUTTON_YES)) {
       digitalWrite (LED_YES, HIGH);
       lcd.clear();
-      lcd.setCursor(0,0); 
-      lcd.print("Cheers!");
+      print_centered_String_from_Array(lcd, cheers, 1, random(sizeof(cheers)/sizeof(cheers[0])));
       doubleShot = false;
       pour_Shot(lcd);
       break;  
     }
     if (!digitalRead(BUTTON_NO)) {
-       for (int i = 0; i <= NO_AMOUNT; i++) {                                      // for loop is nececarry because active relayPin leads to wrong readings at the bottons
+       for (byte i = 0; i <= NO_AMOUNT; i++) {                                      // for loop is nececarry because active relayPin leads to wrong readings at the bottons
         if (digitalRead(BUTTON_NO) == 1) 
           break;
        if (i == NO_AMOUNT) {

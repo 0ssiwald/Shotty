@@ -31,6 +31,7 @@ void start_Screen(LiquidCrystal_I2C);
 void calibrate_Routine(LiquidCrystal_I2C);
 void ready_Message(LiquidCrystal_I2C, int);
 int starting_Measurement(LiquidCrystal_I2C);
+void print_centered_String_from_Array(LiquidCrystal_I2C lcd, const char **, byte, int);
 void lcd_Curse(LiquidCrystal_I2C);
 int get_Highest_Value(int);
 void display_Message(LiquidCrystal_I2C, int);
