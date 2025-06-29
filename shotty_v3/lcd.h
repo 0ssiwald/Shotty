@@ -6,14 +6,6 @@
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
-typedef enum lcd_alc_level{
-  alc_level_none  = 0,
-  alc_level_one   = 1,
-  alc_level_two   = 2,
-  alc_level_three = 3,
-  alc_level_max   = 4,
-} lcd_alc_level_t;
-
 void lcd_init(void);
 void lcd_clear(void);
 void lcd_clear_pos(uint8_t row, uint8_t col, size_t len);

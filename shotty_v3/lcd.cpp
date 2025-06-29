@@ -32,7 +32,7 @@ void lcd_clear_pos(uint8_t row, uint8_t col, size_t len)
 void lcd_print_centered_string(uint8_t row, const char * str)
 {
   size_t len = strlen(str);
-  unsigned int mid_pos = (10 - len / 2) - (len % 2);
+  uint8_t mid_pos = (LCD_WIDTH / 2 - len / 2) - (len % 2);
   lcd.setCursor(mid_pos, row);
   lcd.print(str);
 } /* lcd_centered_string */

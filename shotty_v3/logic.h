@@ -6,8 +6,6 @@
 #include "pump.h"
 #include "sensor.h"
 
-static const char * alc_types[] = {"Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka", "Pflaume", "Tequila", "Wurstwasser"};
-
 void logic_init(void);
 void logic_alc_selection(void);
 void logic_program_start(void);
