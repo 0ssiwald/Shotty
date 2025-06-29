@@ -9,7 +9,7 @@ void sensor_init(void)
 
 
 /***************************************************************************************************/
-int sensor_measure(void)
+int16_t sensor_measure(void)
 {
   return analogRead(SENSOR_PIN);
 } /* sensor_measure */

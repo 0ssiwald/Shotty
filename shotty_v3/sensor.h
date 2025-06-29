@@ -4,6 +4,6 @@
 #include "defines.h"
 
 void sensor_init(void);
-int sensor_measure(void);
+int16_t sensor_measure(void);
 
 #endif /* _SENSOR_H_ */
