@@ -11,12 +11,12 @@ void setup() {
 }
 
 void loop() {
-  logic_calibration();                                                      /* Calibrate sensor */
-  logic_program_start();                                                    /* Display user the option to shot or measure */
-  button_t button_pressed = button_wait_for_any_timed(LOOP_REFRESH_TIME);   /* Wait for user input */
-  if(button_yes == button_pressed) {                                        /* User wants a shot */
+  logic_calibration();                                /* Calibrate sensor */
+  logic_program_start();                              /* Display user the option to shot or measure */
+  button_t button_pressed = button_wait_for_any();    /* Wait for user input */
+  if(button_yes == button_pressed) {                  /* User wants a shot */
     logic_shot();
-  } else if(button_no == button_pressed) {                                  /* User wants to measure */
+  } else if(button_no == button_pressed) {            /* User wants to measure */
     logic_measurement();
   }
 }

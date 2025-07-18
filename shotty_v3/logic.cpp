@@ -1,6 +1,13 @@
 #include "logic.h"
 
-size_t alc_selected = -1;   /* Index of alc_types array. Stores the user selected alc type */
+/* Strings */
+const char * alc_types[] = {"Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka", "Pflaume", "Tequila", "Wurstwasser"};
+const char * cheers[] = {"Cheers", "You da best!", "Love you <3", "Goooo!!", "Yummy", "Delicious!", "Prost", "Chin chin", "Salut", "Prosit", "Cheerio", "Good choice!", "Tasty", "Lets gooo", "Sweet"};
+const char * curses[] = {"Pussy", "Noob", "Little baby", "Boring!!!", "Lame!!!", "Chicken", "Meh!", "Not cool", "Weakling", "Loser", "Fuck off", "Go away!", "Easter egg ;)", "Stupid", "Lightweight",
+                         "Dick", "Cunt", "Cock", "Buhh!", "Unfortunate", "Wimp", "Softy", "Shame", "U sure?", "Doofian!", "Kurva", "Fils de pute", "Cyka blyat", "Bitsh whyy?", "Whack!!", "Dumb",
+                         "Foolish", "Dull", "Sad :(", "Stupid"};
+
+int32_t alc_selected = -1;   /* Index of alc_types array. Stores the user selected alc type */
 
 
 /***************************************************************************************************/
@@ -14,9 +21,9 @@ void logic_init(void)
 void logic_alc_selection(void)
 {
   lcd_print_centered_string(0, "Lets gooo!!!");
-  lcd_print_centered_string(2, "Press Y to choose");
-  lcd_print_centered_string(3, "an alcohol type.");
-  lcd_print_centered_string(4, "Press N to skip");
+  lcd_print_centered_string(1, "Press Y to choose");
+  lcd_print_centered_string(2, "an alcohol type.");
+  lcd_print_centered_string(3, "Press N to skip");
 
   button_t button_pressed = button_wait_for_any();
   if(button_no == button_pressed) { /* User does not want to select an alcohol */
@@ -106,13 +113,16 @@ void logic_shot(void)
     lcd_print_val(2, 13, "%hhu", seconds_left);                   /* Update LCD with seconds left */
     button_t button_pressed = button_wait_for_any_timed(1000);    /* Wait 1s for user input */
     if(button_no == button_pressed) {                             /* Shot canceled */
-      goto curse;
+      _logic_curse();
+      return;
     }
   }
+  lcd_print_val(2, 13, "%hhu", 0);  /* Show a 0 on the countdown */
 
   /* Pour the shot and check for cancelation */
   if(_logic_pour_shot()) {    
-    goto curse;     /* Shot canceled */
+    _logic_curse();     /* Shot canceled */
+    return;
   }
 
   /* Ask for double shot */
@@ -121,16 +131,13 @@ void logic_shot(void)
   lcd_print_centered_string(1, "Y/N");
   button_t button_pressed = button_wait_for_any();
   if(button_no == button_pressed) {   /* No double shot */
-    goto curse;
+    _logic_curse();
+    return;
   }
 
   /* Pour double shot */
-  lcd_print_centered_string(3, random(sizeof(cheers)/sizeof(*cheers)));
+  lcd_print_centered_string(3, cheers[ix]);
   (void)_logic_pour_shot();   /* Pour shot without checking for cancelation */
-  return;
-
-curse:
-  _logic_curse();
 } /* logic_shot */
 
 
@@ -140,8 +147,8 @@ void _logic_shot_or_not(int16_t sensor_val)
   /* Print BAC */
   float display_val = (sensor_val < 25) ? 0.0 : (float)sensor_val / 500.0;
   lcd_clear();
-  lcd_print_val(0, 5, "Alcohol:");
-  lcd_print_float(0, 14, display_val);
+  lcd_print_val(0, 3, "Alcohol:");
+  lcd_print_float(0, 12, display_val);
   lcd_print_val(0, 16, "%s", "%.");
 
   /* Determine drunkenness */
@@ -188,6 +195,7 @@ void logic_measurement(void)
   lcd_clear();
   lcd_print_centered_string(0, "Starting measurement");
   lcd_print_centered_string(1, "Blow me for 5s");
+  delay(MEASUREMENT_DELAY);
 
   /* Determine alc level */
   int16_t sensor_val_ref = sensor_measure();
