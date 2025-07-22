@@ -1,13 +1,14 @@
 #include "logic.h"
 
 /* Strings */
-const char * alc_types[] = {"Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka", "Pflaume", "Tequila", "Wurstwasser"};
+const char * selection[] = {"Shot", "Measure", "Akinator", "Select Alc"};
+const char * alc_types[] = {"Mystery", "Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka", "Pflaume", "Tequila", "Wurstwasser"};
 const char * cheers[] = {"Cheers", "You da best!", "Love you <3", "Goooo!!", "Yummy", "Delicious!", "Prost", "Chin chin", "Salut", "Prosit", "Cheerio", "Good choice!", "Tasty", "Lets gooo", "Sweet"};
 const char * curses[] = {"Pussy", "Noob", "Little baby", "Boring!!!", "Lame!!!", "Chicken", "Meh!", "Not cool", "Weakling", "Loser", "Fuck off", "Go away!", "Easter egg ;)", "Stupid", "Lightweight",
                          "Dick", "Cunt", "Cock", "Buhh!", "Unfortunate", "Wimp", "Softy", "Shame", "U sure?", "Doofian!", "Kurva", "Fils de pute", "Cyka blyat", "Bitsh whyy?", "Whack!!", "Dumb",
                          "Foolish", "Dull", "Sad :(", "Stupid"};
 
-int32_t alc_selected = -1;   /* Index of alc_types array. Stores the user selected alc type */
+size_t alc_selected = 0;   /* Index of alc_types array. Stores the user selected alc type */
 
 
 /***************************************************************************************************/
@@ -20,55 +21,46 @@ void logic_init(void)
 /***************************************************************************************************/
 void logic_alc_selection(void)
 {
-  lcd_print_centered_string(0, "Lets gooo!!!");
-  lcd_print_centered_string(1, "Press Y to choose");
-  lcd_print_centered_string(2, "an alcohol type.");
-  lcd_print_centered_string(3, "Press N to skip");
+  static bool first_selection = true;
+  const size_t alc_types_len = sizeof(alc_types)/sizeof(*alc_types);
 
-  button_t button_pressed = button_wait_for_any();
-  if(button_no == button_pressed) { /* User does not want to select an alcohol */
-    lcd_clear();
-    return;
+  lcd_clear();
+  if(first_selection) {
+    first_selection = false;
+    lcd_print_centered_string(0, "Lets gooo!!!");
+    lcd_print_centered_string(1, "Choose an alc type");
+    lcd_print_val(3, 0, "%s", "Y-Okay        Skip-N");
+
+    button_t button_pressed = button_wait(button_any);
+    if(button_no == button_pressed) { /* User does not want to select an alcohol */
+      return;
+    }
   }
 
   /* User wants to select an alcohol */
-  size_t alc_len = sizeof(alc_types)/sizeof(*alc_types);
-  alc_selected = 0;
-
   lcd_clear();
-  lcd_print_centered_string(2, "Press Y to select");
-  lcd_print_centered_string(3, "Press N to change");
+  lcd_print_val(0, 0, "%s", "-> ");
+  lcd_print_val(3, 0, "Y-Select      Next-N");
 
   while(true) {
-    lcd_print_centered_string(0, alc_types[alc_selected]);  /* Print currently selected alc */  
-    button_pressed = button_wait_for_any();                 /* Ask the user if they want this alc or to see the next option */
+    lcd_print_val(0, 3, "%s", alc_types[alc_selected]);      /* Print currently selected alc */
+    size_t display_ix = alc_selected;
+    for(int i = 0; i < 2; i++) {
+      if(++display_ix >= alc_types_len) { display_ix = 0; }
+      lcd_print_val(i + 1, 3, "%s", alc_types[display_ix]);
+    }  
+    button_t button_pressed = button_wait(button_any);      /* Ask the user if they want this alc or to see the next option */
     if(button_yes == button_pressed) {                      /* User wants the currently selected alc */
       lcd_clear();
       return;
     } else {                                                /* User wants to see the next alc */
-      if(++alc_selected == alc_len) {
-        alc_selected = 0;
-      }
+      if(++alc_selected >= alc_types_len) { alc_selected = 0; }
     }
-    lcd_clear_pos(0, 0, LCD_WIDTH);                         /* Clear previous alc from LCD */
+    for(uint8_t i = 0; i < 3; i++) {                        /* Clear previous alc selection */
+      lcd_clear_pos(i, 3, LCD_WIDTH - 3);
+    }
   }
 } /* logic_alc_selection */
-
-
-/***************************************************************************************************/
-void logic_program_start(void)
-{
-  lcd_clear();
-  if(-1 == alc_selected) {
-    lcd_print_centered_string(0, "Shotty is ready");
-  } else {
-    lcd_print_centered_string(0, "Shoty is ready with");
-    lcd_print_centered_string(1, alc_types[alc_selected]);
-  }
-
-  lcd_print_centered_string(2, "Press Y for shot");
-  lcd_print_centered_string(3, "Press N to measure");
-} /* logic_program_start */
 
 
 /***************************************************************************************************/
@@ -76,7 +68,7 @@ void logic_program_start(void)
 bool _logic_pour_shot(void)
 {
   pump_start();
-  button_t button_pressed = button_wait_for_any_timed(PUMP_SHOT_TIME);  /* Check for user cancelation and time the shot */
+  button_t button_pressed = button_wait_timed(button_no, PUMP_SHOT_TIME);  /* Check for user cancelation and time the shot */
   pump_stop();
   if(button_no == button_pressed) {   /* User canceled the shot */
     return true;
@@ -111,7 +103,7 @@ void logic_shot(void)
   /* Countdown to first shot */
   for(uint8_t seconds_left = SHOT_CANCEL_TIME; seconds_left > 0; seconds_left--) {
     lcd_print_val(2, 13, "%hhu", seconds_left);                   /* Update LCD with seconds left */
-    button_t button_pressed = button_wait_for_any_timed(1000);    /* Wait 1s for user input */
+    button_t button_pressed = button_wait_timed(button_no, 1000); /* Wait 1s for user input */
     if(button_no == button_pressed) {                             /* Shot canceled */
       _logic_curse();
       return;
@@ -127,9 +119,9 @@ void logic_shot(void)
 
   /* Ask for double shot */
   lcd_clear();
-  lcd_print_centered_string(0, "Double Shot? :)");
-  lcd_print_centered_string(1, "Y/N");
-  button_t button_pressed = button_wait_for_any();
+  lcd_print_centered_string(1, "Double Shot? :)");
+  lcd_print_centered_string(2, "Y/N");
+  button_t button_pressed = button_wait(button_any);
   if(button_no == button_pressed) {   /* No double shot */
     _logic_curse();
     return;
@@ -168,7 +160,7 @@ void _logic_shot_or_not(int16_t sensor_val)
     lcd_print_centered_string(3, "Press Y for a shot!");
   }
 
-  button_t button_pressed = button_wait_for_any();
+  button_t button_pressed = button_wait(button_any);
   lcd_clear();
   if(too_drunk) {                         /* No more shots for the user */
     if(button_no == button_pressed) {     /* Pressed N like a good boy */
@@ -201,9 +193,9 @@ void logic_measurement(void)
   int16_t sensor_val_ref = sensor_measure();
   int16_t sensor_val_highest = 0;
   for(uint8_t seconds_left = 5; seconds_left > 0; seconds_left--) {
-    lcd_print_val(3, 9, "%hhu", seconds_left);                  /* Update the screen with seconds left */
-    button_t button_pressed = button_wait_for_any_timed(1000);  /* Wait 1s for user cancelation and time the measurement */
-    if(button_no == button_pressed) {                           /* User canceled the measurement */
+    lcd_print_val(3, 9, "%hhu", seconds_left);                    /* Update the screen with seconds left */
+    button_t button_pressed = button_wait_timed(button_no, 1000); /* Wait 1s for user cancelation and time the measurement */
+    if(button_no == button_pressed) {                             /* User canceled the measurement */
       _logic_curse();
       return;
     }
@@ -216,6 +208,47 @@ void logic_measurement(void)
   sensor_val_highest = (sensor_val_highest < sensor_val_ref) ? 0 : sensor_val_highest - sensor_val_ref;
   _logic_shot_or_not(sensor_val_highest);
 } /* logic_measurement */
+
+
+/***************************************************************************************************/
+void logic_program_start(void)
+{
+  const size_t selection_len = sizeof(selection) / sizeof(*selection);
+  size_t selection_ix = 0;
+
+  char alc_str[20] = "Alc: ";
+  strncat(alc_str, alc_types[alc_selected], 15);
+
+  lcd_clear();
+  lcd_print_centered_string(0, alc_str);
+  lcd_print_val(1, 0, "%s", "->");
+  lcd_print_val(1, 3, "%s", selection[selection_ix]);
+  lcd_print_val(2, 3, "%s", selection[selection_ix + 1]);
+  lcd_print_val(3, 3, "%s", selection[selection_ix + 2]);
+  lcd_print_centered_string(3, "Y-Select      Next-N");
+
+  while(true) {
+    button_t button_pressed = button_wait(button_any);
+    if(button_yes == button_pressed) {
+      break;
+    }
+    lcd_clear_pos(1, 3, LCD_WIDTH - 3);   /* Clear previous */
+    lcd_clear_pos(2, 3, LCD_WIDTH - 3);   /* selection      */
+    if(++selection_ix >= selection_len) { selection_ix = 0; } /* Increment selection index */
+    lcd_print_val(1, 3, "%s", selection[selection_ix]);       /* Display the first next option */
+    size_t display_ix = selection_ix + 1;
+    if(display_ix >= selection_len) { display_ix = 0; }
+    lcd_print_val(2, 3, "%s", selection[display_ix]);         /* Display the second next option */
+  }
+
+  switch(selection_ix) {
+    case 0: logic_shot(); break;
+    case 1: logic_measurement(); break;
+    case 2: akinator_start(); break;
+    case 3: logic_alc_selection(); break;
+    default: break;
+  }
+} /* logic_program_start */
 
 
 /***************************************************************************************************/
@@ -245,7 +278,7 @@ void logic_calibration(void)
   while(millis() < WARM_UP_TIME || sensor_val > SENSOR_THRESHOLD) {
     lcd_clear_pos(1, 15, 4);
     lcd_print_val(1, 15, "%d", sensor_val);
-    button_t button_pressed = button_wait_for_any_timed(CALIBRATION_INTERVAL);
+    button_t button_pressed = button_wait_timed(button_any, CALIBRATION_INTERVAL);
     if(button_yes == button_pressed) {  /* Warmup shot */
       logic_shot();
     }

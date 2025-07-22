@@ -16,10 +16,11 @@
 #define LCD_WIDTH  20     // LCD number of columns
 
 /* User changeable defines */
-#define LCD_CURSE_TIME        2000    // (ms) How long curses are displayed
-#define NO_SHOT_LIMIT         750     //      Sensor value above which the user won't get any more shots
-#define SHOT_CANCEL_TIME      3       // (s)  How many seconds the user is able to cancel the shot. Should not exceed 9 to be printed correctly
-#define MEASUREMENT_DELAY     1000    // (ms) Delay between measurement screen and the measurement actually starting
+#define LCD_CURSE_TIME          2000    // (ms) How long curses are displayed
+#define NO_SHOT_LIMIT           750     //      Sensor value above which the user won't get any more shots
+#define SHOT_CANCEL_TIME        3       // (s)  How many seconds the user is able to cancel the shot. Should not exceed 9 to be printed correctly
+#define MEASUREMENT_DELAY       1000    // (ms) Delay between measurement screen and the measurement actually starting
+#define AKINATOR_SOLUTION_TIME  3000    // (ms) How long the Akinator solution is shown on screen
 
 /* System defines that should not be changed by the user */
 #define BUTTON_CHECK_DELAY      50      // (ms) Delay between checking the button states
