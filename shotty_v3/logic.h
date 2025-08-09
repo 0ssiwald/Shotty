@@ -1,7 +1,7 @@
 #ifndef _LOGIC_H_
 #define _LOGIC_H_
 
-#include "akinator.h"
+#include "games.h"
 #include "button.h"
 #include "lcd.h"
 #include "pump.h"

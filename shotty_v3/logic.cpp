@@ -1,7 +1,7 @@
 #include "logic.h"
 
 /* Strings */
-const char * selection[] = {"Shot", "Measure", "Akinator", "Select Alc"};
+const char * selection[] = {"Shot", "Measure", "Akinator", "Timer Game", "Select Alc"};
 const char * alc_types[] = {"Mystery", "Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka", "Pflaume", "Tequila", "Wurstwasser"};
 const char * cheers[] = {"Cheers", "You da best!", "Love you <3", "Goooo!!", "Yummy", "Delicious!", "Prost", "Chin chin", "Salut", "Prosit", "Cheerio", "Good choice!", "Tasty", "Lets gooo", "Sweet"};
 const char * curses[] = {"Pussy", "Noob", "Little baby", "Boring!!!", "Lame!!!", "Chicken", "Meh!", "Not cool", "Weakling", "Loser", "Fuck off", "Go away!", "Easter egg ;)", "Stupid", "Lightweight",
@@ -27,8 +27,8 @@ void logic_alc_selection(void)
   lcd_clear();
   if(first_selection) {
     first_selection = false;
-    lcd_print_centered_string(0, "Lets gooo!!!");
-    lcd_print_centered_string(1, "Choose an alc type");
+    lcd_print_centered_string(0, F("Lets gooo!!!"));
+    lcd_print_centered_string(1, F("Choose an alc type"));
     lcd_print_val(3, 0, "%s", "Y-Okay        Skip-N");
 
     button_t button_pressed = button_wait(button_any);
@@ -90,15 +90,15 @@ void _logic_curse(void)
 
 
 /***************************************************************************************************/
-void logic_shot(void)
+void _logic_shot(void)
 {
   /* Screen setup for shot */
   lcd_clear();
   size_t ix = random(sizeof(cheers)/sizeof(*cheers));
   lcd_print_centered_string(0, cheers[ix]);
-  lcd_print_centered_string(1, "Shot glass in place?");
+  lcd_print_centered_string(1, F("Shot glass in place?"));
   lcd_print_val(2, 5, "Shot in ");  /* Not centered so we can print the countdown next to it */
-  lcd_print_centered_string(3, "Press N to cancel");
+  lcd_print_centered_string(3, F("Press N to cancel"));
 
   /* Countdown to first shot */
   for(uint8_t seconds_left = SHOT_CANCEL_TIME; seconds_left > 0; seconds_left--) {
@@ -119,8 +119,8 @@ void logic_shot(void)
 
   /* Ask for double shot */
   lcd_clear();
-  lcd_print_centered_string(1, "Double Shot? :)");
-  lcd_print_centered_string(2, "Y/N");
+  lcd_print_centered_string(1, F("Double Shot? :)"));
+  lcd_print_centered_string(2, F("Y/N"));
   button_t button_pressed = button_wait(button_any);
   if(button_no == button_pressed) {   /* No double shot */
     _logic_curse();
@@ -130,7 +130,7 @@ void logic_shot(void)
   /* Pour double shot */
   lcd_print_centered_string(3, cheers[ix]);
   (void)_logic_pour_shot();   /* Pour shot without checking for cancelation */
-} /* logic_shot */
+} /* _logic_shot */
 
 
 /***************************************************************************************************/
@@ -146,34 +146,34 @@ void _logic_shot_or_not(int16_t sensor_val)
   /* Determine drunkenness */
   bool too_drunk = false;
   switch(sensor_val) {
-    case 0   ... 25                : lcd_print_centered_string(1, "No alcohol deteced"); lcd_print_centered_string(2, "A shot will help!"); break;
-    case 26  ... 250               : lcd_print_centered_string(1, "Meh, pretty sober!"); lcd_print_centered_string(2, "You need a drink!"); break;
-    case 251 ... 500               : lcd_print_centered_string(1, "A little drunk");     lcd_print_centered_string(2, "A shot is needed!"); break;
-    case 501 ... NO_SHOT_LIMIT     : lcd_print_centered_string(1, "Good level!!!");      lcd_print_centered_string(2, "Keep it up!");       break;
-    case NO_SHOT_LIMIT + 1 ... 1100: lcd_print_centered_string(1, "You are wasted!!!");  lcd_print_centered_string(2, "You had enough!"); too_drunk = true; break;
+    case 0   ... 25                : lcd_print_centered_string(1, F("No alcohol deteced")); lcd_print_centered_string(2, F("A shot will help!")); break;
+    case 26  ... 250               : lcd_print_centered_string(1, F("Meh, pretty sober!")); lcd_print_centered_string(2, F("You need a drink!")); break;
+    case 251 ... 500               : lcd_print_centered_string(1, F("A little drunk"));     lcd_print_centered_string(2, F("A shot is needed!")); break;
+    case 501 ... NO_SHOT_LIMIT     : lcd_print_centered_string(1, F("Good level!!!"));      lcd_print_centered_string(2, F("Keep it up!"));       break;
+    case NO_SHOT_LIMIT + 1 ... 1100: lcd_print_centered_string(1, F("You are wasted!!!"));  lcd_print_centered_string(2, F("You had enough!")); too_drunk = true; break;
     default: break;
   }
 
   if(too_drunk) {
-    lcd_print_centered_string(3, "Press N for no shot");
+    lcd_print_centered_string(3, F("Press N for no shot"));
   } else {
-    lcd_print_centered_string(3, "Press Y for a shot!");
+    lcd_print_centered_string(3, F("Press Y for a shot!"));
   }
 
   button_t button_pressed = button_wait(button_any);
   lcd_clear();
   if(too_drunk) {                         /* No more shots for the user */
     if(button_no == button_pressed) {     /* Pressed N like a good boy */
-      lcd_print_centered_string(1, "Good Boy!");
+      lcd_print_centered_string(1, F("Good Boy!"));
     } else {                              /* Pressed Y like a bad boy */
-      lcd_print_centered_string(1, "Bad Boy!");
+      lcd_print_centered_string(1, F("Bad Boy!"));
       delay(LCD_CURSE_TIME);
     } 
   } else {                                /* User may have a shot */
     if(button_no == button_pressed) {     /* No shot */
       _logic_curse();
     } else {                              /* Shot */
-      logic_shot();
+      _logic_shot();
     }
   }
 } /* _logic_shot_or_not */
@@ -181,12 +181,12 @@ void _logic_shot_or_not(int16_t sensor_val)
 
 
 /***************************************************************************************************/
-void logic_measurement(void)
+void _logic_measurement(void)
 {
   /* Display the measurement message */
   lcd_clear();
-  lcd_print_centered_string(0, "Starting measurement");
-  lcd_print_centered_string(1, "Blow me for 5s");
+  lcd_print_centered_string(0, F("Starting measurement"));
+  lcd_print_centered_string(1, F("Blow me for 5s"));
   delay(MEASUREMENT_DELAY);
 
   /* Determine alc level */
@@ -207,7 +207,7 @@ void logic_measurement(void)
 
   sensor_val_highest = (sensor_val_highest < sensor_val_ref) ? 0 : sensor_val_highest - sensor_val_ref;
   _logic_shot_or_not(sensor_val_highest);
-} /* logic_measurement */
+} /* _logic_measurement */
 
 
 /***************************************************************************************************/
@@ -225,7 +225,7 @@ void logic_program_start(void)
   lcd_print_val(1, 3, "%s", selection[selection_ix]);
   lcd_print_val(2, 3, "%s", selection[selection_ix + 1]);
   lcd_print_val(3, 3, "%s", selection[selection_ix + 2]);
-  lcd_print_centered_string(3, "Y-Select      Next-N");
+  lcd_print_centered_string(3, F("Y-Select      Next-N"));
 
   while(true) {
     button_t button_pressed = button_wait(button_any);
@@ -241,14 +241,30 @@ void logic_program_start(void)
     lcd_print_val(2, 3, "%s", selection[display_ix]);         /* Display the second next option */
   }
 
+  bool shot = false;
   switch(selection_ix) {
-    case 0: logic_shot(); break;
-    case 1: logic_measurement(); break;
-    case 2: akinator_start(); break;
-    case 3: logic_alc_selection(); break;
+    case 0: _logic_shot(); break;
+    case 1: _logic_measurement(); break;
+    case 2: games_akinator(); break;
+    case 3: shot = games_timer(); break;
+    case 4: logic_alc_selection(); break;
     default: break;
   }
+  if(shot) {
+    _logic_shot();
+  }
 } /* logic_program_start */
+
+
+/***************************************************************************************************/
+void _logic_calibration_text(void)
+{
+  lcd_clear();
+  lcd_print_centered_string(0, F("Sensor calibrating"));
+  lcd_print_val(1, 0, "Current value: ");
+  lcd_print_centered_string(2, F("Y for a warmup shot"));
+  lcd_print_centered_string(3, F("N to disable calibr."));
+} /* _logic_calibration_text */
 
 
 /***************************************************************************************************/
@@ -268,11 +284,7 @@ void logic_calibration(void)
   }
 
   /* Display calibration text */
-  lcd_clear();
-  lcd_print_centered_string(0, "Sensor calibrating");
-  lcd_print_val(1, 0, "Current value: ");
-  lcd_print_centered_string(2, "Y for a warmup shot");
-  lcd_print_centered_string(3, "N to disable calibr.");
+  _logic_calibration_text();
 
   /* Start sensor calibration routine */
   while(millis() < WARM_UP_TIME || sensor_val > SENSOR_THRESHOLD) {
@@ -280,7 +292,8 @@ void logic_calibration(void)
     lcd_print_val(1, 15, "%d", sensor_val);
     button_t button_pressed = button_wait_timed(button_any, CALIBRATION_INTERVAL);
     if(button_yes == button_pressed) {  /* Warmup shot */
-      logic_shot();
+      _logic_shot();
+      _logic_calibration_text();
     }
     if(button_no == button_pressed) {   /* User disabled calibration */
       calibration_enabled = false;

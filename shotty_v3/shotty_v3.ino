@@ -1,5 +1,5 @@
 #include "logic.h"
-#include "akinator.h"
+#include "games.h"
 
 void setup() {
   sensor_init();

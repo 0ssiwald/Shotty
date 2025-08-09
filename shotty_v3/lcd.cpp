@@ -39,6 +39,16 @@ void lcd_print_centered_string(uint8_t row, const char * str)
 
 
 /***************************************************************************************************/
+void lcd_print_centered_string(uint8_t row, const __FlashStringHelper * str)
+{
+  size_t len = strlen_P((PGM_P)str);
+  uint8_t mid_pos = (LCD_WIDTH / 2 - len / 2) - (len % 2);
+  lcd.setCursor(mid_pos, row);
+  lcd.print(str);
+} /* lcd_centered_string */
+
+
+/***************************************************************************************************/
 void lcd_print_val(uint8_t row, uint8_t col, const char * fmt, ...)
 {
   char buffer[LCD_WIDTH + 1] = "";     /* +1 for '\0' */
