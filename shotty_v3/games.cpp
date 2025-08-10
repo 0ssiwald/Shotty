@@ -6,8 +6,8 @@ typedef struct question {
   const char * line_two;
 } question_t;
 
-#define NUM_PEOPLE    10
-#define NUM_QUESTIONS 5
+#define NUM_PEOPLE    14
+#define NUM_QUESTIONS 7
 
 typedef struct person {
   const char * name;
@@ -18,30 +18,38 @@ typedef struct person {
       bool bachelor : 1;
       bool weed     : 1;
       bool uni      : 1;
+      bool year     : 1;
+      bool flat     : 1;
     };
     uint8_t answers;
   };
 } person_t;
 
-const person_t people[] = {/* name    , male, glasses, bachelor, weed, uni */
-                           { "Hermine",  0  ,    0   ,    0    ,  0  ,  0 },
-                           { "Paul"   ,  1  ,    0   ,    1    ,  1  ,  0 },
-                           { "Lino"   ,  1  ,    1   ,    1    ,  1  ,  0 },
-                           { "Hannah" ,  0  ,    0   ,    1    ,  0  ,  1 },
-                           { "Freddi" ,  1  ,    1   ,    0    ,  0  ,  0 },  /* Chrissi */
-                           { "Ossi"   ,  1  ,    0   ,    1    ,  1  ,  1 },  
-                           { "Cheru"  ,  1  ,    1   ,    0    ,  1  ,  0 },  /* Passi */
-                           { "Hanna"  ,  0  ,    1   ,    1    ,  0  ,  1 },
-                           { "Chrissi",  1  ,    1   ,    0    ,  0  ,  0 },  /* Freddi */ 
-                           { "Passi"  ,  1  ,    1   ,    0    ,  1  ,  0 }   /* Cheru */
+const person_t people[] = {/* name    , male, glasses, bachelor, weed, uni, 98er, flat */
+                           { "Hermine",  0  ,    0   ,    0    ,  0  ,  0 ,  1  ,  0  },
+                           { "Paul"   ,  1  ,    0   ,    1    ,  1  ,  0 ,  1  ,  1  },
+                           { "Lino"   ,  1  ,    1   ,    1    ,  1  ,  0 ,  1  ,  1  },
+                           { "Hannah" ,  0  ,    0   ,    1    ,  0  ,  1 ,  1  ,  1  },
+                           { "Freddi" ,  1  ,    1   ,    0    ,  0  ,  1 ,  0  ,  0  },
+                           { "Ossi"   ,  1  ,    0   ,    1    ,  1  ,  1 ,  1  ,  1  },  
+                           { "Cheru"  ,  1  ,    1   ,    0    ,  1  ,  0 ,  1  ,  0  },
+                           { "Hanna"  ,  0  ,    1   ,    1    ,  0  ,  1 ,  1  ,  1  },
+                           { "Chrissi",  1  ,    1   ,    0    ,  0  ,  0 ,  0  ,  0  },
+                           { "Passi"  ,  1  ,    1   ,    0    ,  1  ,  0 ,  0  ,  0  },
+                           { "Anton"  ,  1  ,    0   ,    1    ,  0  ,  1 ,  1  ,  0  },
+                           { "Dilara" ,  0  ,    0   ,    1    ,  0  ,  0 ,  0  ,  1  },
+                           { "Enya"   ,  0  ,    0   ,    1    ,  0  ,  0 ,  1  ,  1  },
+                           { "Che"    ,  1  ,    0   ,    0    ,  0  ,  1 ,  0  ,  1  }
 };
 
 /* BEWARE: Questions have to be in the same order as the answers in person_t */
-const question_t questions[] = {{"Ist deine Person"   , "ein Mann?"      },
-                                {"Traegt deine Person", "eine Brille?"   },
-                                {"Hat deine Person"   , "einen Bachelor?"},
-                                {"Kifft deine Person" , "regelmaessig?"  },
-                                {"Studiert deine"     , "Person noch?"   }};
+const question_t questions[] = {{"Ist deine Person"   , "ein Mann?"           },
+                                {"Traegt deine Person", "eine Brille?"        },
+                                {"Hat deine Person"   , "einen Bachelor?"     },
+                                {"Kifft deine Person" , "regelmaessig?"       },
+                                {"Studiert deine"     , "Person noch?"        },
+                                {"Ist deine Person"   , "98er Jahrgang?"      },
+                                {"Wohnt deine Person" , "mit dem Partner zsm?"}};
 
 static_assert(NUM_PEOPLE == (sizeof(people) / sizeof(*people)), "Number of people in array 'people' isnt't the same as NUM_PEOPLE");
 static_assert(NUM_QUESTIONS == (sizeof(questions) / sizeof(*questions)), "Number of questions in array 'questions' isn't the same as NUM_QUESTIONS");
