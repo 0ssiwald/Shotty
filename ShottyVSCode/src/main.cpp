@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "logic.h"
 #include "games.h"
 

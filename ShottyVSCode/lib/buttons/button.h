@@ -1,6 +1,7 @@
 #ifndef _BUTTON_H_
 #define _BUTTON_H_
 
+#include <Arduino.h>
 #include "defines.h"
 
 typedef enum button {
