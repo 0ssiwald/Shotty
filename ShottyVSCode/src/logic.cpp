@@ -1,7 +1,7 @@
 #include "logic.h"
 
 /* Strings */
-const char * selection[] = {"Shot", "Measure", "Akinator", "Timer Game", "Select Alc"};
+const char * selection[] = {"Shot", "Timer Game", "Measure", "Akinator", "Select Alc"};
 const char * alc_types[] = {"Mystery", "Saure Kirsche", "Jaegermeister", "Pfeffi", "Johannisbeere", "Apfel", "Waldbeere", "Vodka", "Pflaume", "Tequila", "Wurstwasser"};
 const char * cheers[] = {"Cheers", "You da best!", "Love you <3", "Goooo!!", "Yummy", "Delicious!", "Prost", "Chin chin", "Salut", "Prosit", "Cheerio", "Good choice!", "Tasty", "Lets gooo", "Sweet"};
 const char * curses[] = {"Pussy", "Noob", "Little baby", "Boring!!!", "Lame!!!", "Chicken", "Meh!", "Not cool", "Weakling", "Loser", "Fuck off", "Go away!", "Easter egg ;)", "Stupid", "Lightweight",
@@ -78,7 +78,7 @@ bool _logic_pour_shot(void)
 
 
 /***************************************************************************************************/
-void _logic_curse(void)
+void logic_curse(void)
 {
   digitalWrite(LED_NO, HIGH);
   lcd_clear();
@@ -105,7 +105,7 @@ void _logic_shot(void)
     lcd_print_val(2, 13, "%hhu", seconds_left);                   /* Update LCD with seconds left */
     button_t button_pressed = button_wait_timed(button_no, 1000); /* Wait 1s for user input */
     if(button_no == button_pressed) {                             /* Shot canceled */
-      _logic_curse();
+      logic_curse();
       return;
     }
   }
@@ -113,7 +113,7 @@ void _logic_shot(void)
 
   /* Pour the shot and check for cancelation */
   if(_logic_pour_shot()) {    
-    _logic_curse();     /* Shot canceled */
+    logic_curse();     /* Shot canceled */
     return;
   }
 
@@ -123,7 +123,7 @@ void _logic_shot(void)
   lcd_print_centered_string(2, F("Y/N"));
   button_t button_pressed = button_wait(button_any);
   if(button_no == button_pressed) {   /* No double shot */
-    _logic_curse();
+    logic_curse();
     return;
   }
 
@@ -171,7 +171,7 @@ void _logic_shot_or_not(int16_t sensor_val)
     } 
   } else {                                /* User may have a shot */
     if(button_no == button_pressed) {     /* No shot */
-      _logic_curse();
+      logic_curse();
     } else {                              /* Shot */
       _logic_shot();
     }
@@ -196,7 +196,7 @@ void _logic_measurement(void)
     lcd_print_val(3, 9, "%hhu", seconds_left);                    /* Update the screen with seconds left */
     button_t button_pressed = button_wait_timed(button_no, 1000); /* Wait 1s for user cancelation and time the measurement */
     if(button_no == button_pressed) {                             /* User canceled the measurement */
-      _logic_curse();
+      logic_curse();
       return;
     }
     int16_t sensor_val_new = sensor_measure();
@@ -223,8 +223,7 @@ void logic_program_start(void)
   lcd_print_centered_string(0, alc_str);
   lcd_print_val(1, 0, "%s", "->");
   lcd_print_val(1, 3, "%s", selection[selection_ix]);
-  lcd_print_val(2, 3, "%s", selection[selection_ix + 1]);
-  lcd_print_val(3, 3, "%s", selection[selection_ix + 2]);
+  lcd_print_val(2, 4, "%s", selection[selection_ix + 1]);
   lcd_print_centered_string(3, F("Y-Select      Next-N"));
 
   while(true) {
@@ -238,15 +237,15 @@ void logic_program_start(void)
     lcd_print_val(1, 3, "%s", selection[selection_ix]);       /* Display the first next option */
     size_t display_ix = selection_ix + 1;
     if(display_ix >= selection_len) { display_ix = 0; }
-    lcd_print_val(2, 3, "%s", selection[display_ix]);         /* Display the second next option */
+    lcd_print_val(2, 4, "%s", selection[display_ix]);         /* Display the second next option */
   }
 
   bool shot = false;
   switch(selection_ix) {
     case 0: _logic_shot(); break;
-    case 1: _logic_measurement(); break;
-    case 2: games_akinator(); break;
-    case 3: shot = games_timer(); break;
+    case 1: shot = games_timer(); break;
+    case 2: _logic_measurement(); break;
+    case 3: games_akinator(); break;
     case 4: logic_alc_selection(); break;
     default: break;
   }

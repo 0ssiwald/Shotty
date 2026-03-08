@@ -1,4 +1,5 @@
 #include "games.h"
+#include "logic.h"
 
 typedef uint32_t possible_people_t;
 typedef struct question {
@@ -6,8 +7,9 @@ typedef struct question {
   const char * line_two;
 } question_t;
 
-#define NUM_PEOPLE    14
-#define NUM_QUESTIONS 7
+#define NUM_PEOPLE     16
+#define NUM_QUESTIONS  8
+#define PLAY_AGAIN_MAX 3
 
 typedef struct person {
   const char * name;
@@ -20,27 +22,29 @@ typedef struct person {
       bool uni      : 1;
       bool year     : 1;
       bool flat     : 1;
+      bool eyes     : 1;
     };
     uint8_t answers;
   };
 } person_t;
 
-const person_t people[] = {/* name    , male, glasses, bachelor, weed, uni, 98er, flat */
-                           { "Hermine",  0  ,    0   ,    0    ,  0  ,  0 ,  1  ,  0  },
-                           { "Paul"   ,  1  ,    0   ,    1    ,  1  ,  0 ,  1  ,  1  },
-                           { "Lino"   ,  1  ,    1   ,    1    ,  1  ,  0 ,  1  ,  1  },
-                           { "Hannah" ,  0  ,    0   ,    1    ,  0  ,  1 ,  1  ,  1  },
-                           { "Freddi" ,  1  ,    1   ,    0    ,  0  ,  1 ,  0  ,  0  },
-                           { "Ossi"   ,  1  ,    0   ,    1    ,  1  ,  1 ,  1  ,  1  },  
-                           { "Cheru"  ,  1  ,    1   ,    0    ,  1  ,  0 ,  1  ,  0  },
-                           { "Hanna"  ,  0  ,    1   ,    1    ,  0  ,  1 ,  1  ,  1  },
-                           { "Chrissi",  1  ,    1   ,    0    ,  0  ,  0 ,  0  ,  0  },
-                           { "Passi"  ,  1  ,    1   ,    0    ,  1  ,  0 ,  0  ,  0  },
-                           { "Anton"  ,  1  ,    0   ,    1    ,  0  ,  1 ,  1  ,  0  },
-                           { "Dilara" ,  0  ,    0   ,    1    ,  0  ,  0 ,  0  ,  1  },
-                           { "Enya"   ,  0  ,    0   ,    1    ,  0  ,  0 ,  1  ,  1  },
-                           { "Che"    ,  1  ,    0   ,    0    ,  0  ,  1 ,  0  ,  1  }
-};
+const person_t people[] = {/* name    , male, glasses, bachelor, weed, uni, 98er, flat, eyes*/
+                           { "Hermine",  0  ,    0   ,    0    ,  0  ,  1 ,  1  ,  0  ,  1},
+                           { "Paul"   ,  1  ,    0   ,    1    ,  1  ,  0 ,  1  ,  1  ,  0},
+                           { "Lino"   ,  1  ,    1   ,    1    ,  1  ,  0 ,  1  ,  1  ,  0},
+                           { "Hannah" ,  0  ,    0   ,    1    ,  0  ,  1 ,  1  ,  1  ,  0},
+                           { "Freddi" ,  1  ,    1   ,    0    ,  0  ,  1 ,  0  ,  0  ,  0},
+                           { "Ossi"   ,  1  ,    0   ,    1    ,  1  ,  0 ,  1  ,  1  ,  1},
+                           { "Cheru"  ,  1  ,    0   ,    0    ,  1  ,  0 ,  1  ,  0  ,  1},
+                           { "Hanna"  ,  0  ,    1   ,    1    ,  0  ,  1 ,  1  ,  1  ,  0},
+                           { "Chrissi",  1  ,    1   ,    0    ,  0  ,  0 ,  0  ,  0  ,  0},
+                           { "Passi"  ,  1  ,    1   ,    0    ,  1  ,  0 ,  0  ,  0  ,  1},
+                           { "Anton"  ,  1  ,    0   ,    1    ,  0  ,  1 ,  1  ,  0  ,  0},
+                           { "Dilara" ,  0  ,    0   ,    1    ,  0  ,  0 ,  0  ,  1  ,  0},
+                           { "Enya"   ,  0  ,    0   ,    1    ,  0  ,  0 ,  1  ,  1  ,  0},
+                           { "Che"    ,  1  ,    0   ,    0    ,  0  ,  1 ,  0  ,  1  ,  1},
+                           { "Lewin"  ,  1  ,    1   ,    1    ,  0  ,  0 ,  0  ,  1  ,  0},
+                           { "Rike"   ,  0  ,    1   ,    1    ,  0  ,  0 ,  0  ,  1  ,  0}};
 
 /* BEWARE: Questions have to be in the same order as the answers in person_t */
 const question_t questions[] = {{"Ist deine Person"   , "ein Mann?"           },
@@ -49,7 +53,8 @@ const question_t questions[] = {{"Ist deine Person"   , "ein Mann?"           },
                                 {"Kifft deine Person" , "regelmaessig?"       },
                                 {"Studiert deine"     , "Person noch?"        },
                                 {"Ist deine Person"   , "98er Jahrgang?"      },
-                                {"Wohnt deine Person" , "mit dem Partner zsm?"}};
+                                {"Wohnt deine Person" , "mit dem Partner zsm?"},
+                                {"Hat deine Person"   , "braune Augen?"       }};
 
 static_assert(NUM_PEOPLE == (sizeof(people) / sizeof(*people)), "Number of people in array 'people' isnt't the same as NUM_PEOPLE");
 static_assert(NUM_QUESTIONS == (sizeof(questions) / sizeof(*questions)), "Number of questions in array 'questions' isn't the same as NUM_QUESTIONS");
@@ -108,48 +113,68 @@ void games_akinator()
 
 bool games_timer()
 {
-  lcd_clear();
-  lcd_print_centered_string(0, F("Druecke nach genau"));
-  char lcd_str[20] = "";
-  snprintf(lcd_str, 2, "%d", TIMER_TARGET_TIME);
-  strncat(lcd_str, " Sekunden", 10);
-  lcd_print_centered_string(1, lcd_str);
-  lcd_print_centered_string(3, F("00.00 s"));
-  delay(1000);
+  for (size_t play_again_count = 0; PLAY_AGAIN_MAX > play_again_count; ++play_again_count) {
+    lcd_clear();
+    lcd_print_centered_string(0, F("Druecke nach genau"));
+    char lcd_str[20] = "";
+    snprintf(lcd_str, 2, "%d", TIMER_TARGET_TIME);
+    strncat(lcd_str, " Sekunden", 10);
+    lcd_print_centered_string(1, lcd_str);
+    lcd_print_centered_string(3, F("00.00 s"));
+    delay(1000);
 
-  unsigned long start_time = millis();
-  unsigned long current_time = start_time;
-  while(current_time <= start_time + TIMER_MAX_TIME) {
-    button_t button_pressed = button_wait_timed(button_any, random(5));
-    if(button_none != button_pressed) { 
-      unsigned long difference = labs(current_time - start_time - TIMER_TARGET_TIME*1000);
-      lcd_clear_pos(0, 0, LCD_WIDTH);
-      lcd_clear_pos(1, 0, LCD_WIDTH);
-      bool shot = false;
-      if(difference < 20) {
-        shot = true;
-        lcd_print_centered_string(0, F("Perfect!"));
-        lcd_print_centered_string(1, F("You get a shot :)"));
+    unsigned long start_time = millis();
+    unsigned long current_time = start_time;
+    while(current_time <= start_time + TIMER_MAX_TIME) {
+      button_t button_pressed = button_wait_timed(button_any, random(5));
+      if(button_none != button_pressed) { 
+        unsigned long difference = labs(current_time - start_time - TIMER_TARGET_TIME*1000);
+        lcd_clear_pos(0, 0, LCD_WIDTH);
+        lcd_clear_pos(1, 0, LCD_WIDTH);
+        if(difference <= 20) {
+          lcd_print_centered_string(0, F("Great!"));
+          lcd_print_centered_string(1, F("You get a shot :)"));
+          delay(TIMER_RESULT_TIME);
+          return true;
+        }
+        else if(difference < 60) {
+          lcd_print_centered_string(0, F("Pretty good, but"));
+          lcd_print_centered_string(1, F("not quite"));
+        }
+        else if(difference < 100){
+          lcd_print_centered_string(1, F("Meh"));
+        } else {
+          lcd_print_centered_string(0, F("Were you even"));
+          lcd_print_centered_string(1, F("trying?"));
+        }
+        delay(TIMER_RESULT_TIME);
+        if (PLAY_AGAIN_MAX > play_again_count + 1) {
+          lcd_clear_pos(0, 0, LCD_WIDTH);
+          lcd_clear_pos(1, 0, LCD_WIDTH);
+          lcd_print_centered_string(0, F("Try again?"));
+          lcd_print_centered_string(1, F("Y/N"));
+          button_t button_pressed = button_wait(button_any);
+          if(button_no == button_pressed) {
+            return false;
+          }
+        }
+        break;
       }
-      else if(difference < 60) {
-        lcd_print_centered_string(0, F("Pretty good, but"));
-        lcd_print_centered_string(1, F("not quite"));
-      }
-      else if(difference < 100){
-        lcd_print_centered_string(1, F("Meh"));
-      } else {
-        lcd_print_centered_string(0, F("Were you even"));
-        lcd_print_centered_string(1, F("trying?"));
-      }
-      delay(TIMER_RESULT_TIME);
-      return shot;
+      current_time = millis();
+      unsigned long timer   = current_time - start_time;
+      uint8_t       seconds = (uint8_t) (timer / 1000);
+      uint16_t      milli   = (uint16_t)(timer % 1000)/10;
+      lcd_print_val(3, 6, "%02hhu.%02hu", seconds, milli);
     }
-    current_time = millis();
-    unsigned long timer   = current_time - start_time;
-    uint8_t       seconds = (uint8_t) (timer / 1000);
-    uint16_t      milli   = (uint16_t)(timer % 1000)/10;
-    lcd_print_val(3, 6, "%02hhu.%02hu", seconds, milli);
   }
-
+  lcd_clear_pos(0, 0, LCD_WIDTH);
+  lcd_clear_pos(1, 0, LCD_WIDTH);
+  lcd_print_centered_string(0, F("A shot for better"));
+  lcd_print_centered_string(1, F("reaction time? Y/N"));
+  button_t button_pressed = button_wait(button_any);
+  if(button_yes == button_pressed) {
+    return true;
+  }
+  logic_curse();
   return false;
 }

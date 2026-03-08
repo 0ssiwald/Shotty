@@ -21,7 +21,7 @@
 #define SHOT_CANCEL_TIME        3       // (s)  How many seconds the user is able to cancel the shot. Should not exceed 9 to be printed correctly
 #define MEASUREMENT_DELAY       1000    // (ms) Delay between measurement screen and the measurement actually starting
 #define AKINATOR_SOLUTION_TIME  3000    // (ms) How long the Akinator solution is shown on screen
-#define TIMER_RESULT_TIME       3000    // (ms) How long the Timer result is shown
+#define TIMER_RESULT_TIME       2000    // (ms) How long the Timer result is shown
 #define TIMER_TARGET_TIME       3       // (s)  Which time the player should aim for in the timer game.
 #define TIMER_MAX_TIME          10000   // (ms) After what time the timer game automatically stops
 #define TIMER_SCORE_PERFECT     50
@@ -32,7 +32,7 @@
 
 /* System defines that should not be changed by the user */
 #define BUTTON_CHECK_DELAY      50      // (ms) Delay between checking the button states
-#define PUMP_SHOT_TIME          3700    // (ms) How long the pump has to be on for 20 ml
+#define PUMP_SHOT_TIME          6500    // (ms) How long the pump has to be on for 20 ml
 #define WARM_UP_TIME            10000   // (ms) How long the sensor has to warm up after startup
 #define SENSOR_THRESHOLD        200     //      The sensor has to fall below this value after startup
 #define CALIBRATION_INTERVAL    500     // (ms) Time between sensor updates during calibration

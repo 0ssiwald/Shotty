@@ -11,5 +11,6 @@ void logic_init(void);
 void logic_alc_selection(void);
 void logic_program_start(void);
 void logic_calibration(void);
+void logic_curse(void);
 
 #endif /* _LOGIC_H_ */
